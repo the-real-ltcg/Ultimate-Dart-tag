@@ -1,5 +1,5 @@
 #define MyAppName "Ultimate Dart Tag"
-#define MyAppVersion "1.0"
+#define MyAppVersion "1.0.1"
 #define MyAppExeName "Ultimate Dart Tag.exe"
 #define MyBuildDir "..\Built EXE"
 
