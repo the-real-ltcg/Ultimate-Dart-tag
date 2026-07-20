@@ -1,6 +1,6 @@
 #define MyAppName "Ultimate Dart Tag"
 #define MyAppVersion "1.0"
-#define MyAppExeName "Ultimate Nerf Dart Tag.exe"
+#define MyAppExeName "Ultimate Dart Tag.exe"
 #define MyBuildDir "..\Built EXE"
 
 [Setup]
@@ -29,7 +29,7 @@ Name: "desktopicon"; Description: "Create a &desktop shortcut"; GroupDescription
 Source: "{#MyBuildDir}\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#MyBuildDir}\UnityCrashHandler64.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#MyBuildDir}\UnityPlayer.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#MyBuildDir}\Ultimate Nerf Dart Tag_Data\*"; DestDir: "{app}\Ultimate Nerf Dart Tag_Data"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "{#MyBuildDir}\Ultimate Dart Tag_Data\*"; DestDir: "{app}\Ultimate Dart Tag_Data"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "{#MyBuildDir}\MonoBleedingEdge\*"; DestDir: "{app}\MonoBleedingEdge"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "{#MyBuildDir}\D3D12\*"; DestDir: "{app}\D3D12"; Flags: ignoreversion recursesubdirs createallsubdirs
 
