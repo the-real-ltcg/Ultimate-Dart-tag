@@ -51,5 +51,5 @@
         "temp/": true,
         "Temp/": true
     },
-    "dotnet.defaultSolution": "FHG-Ultimate-Nerf-Dart-Tag.sln"
+    "dotnet.defaultSolution": "Ultimate Dart Tag.sln"
 }
