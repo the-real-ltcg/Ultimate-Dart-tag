@@ -26,3 +26,6 @@
 # Stray prebuilt Windows binary (not source)
 /New folder/
 /Built EXE/
+
+# Compiled installer output (rebuild from Installer/installer.iss)
+/Installer/Output/
