@@ -74,6 +74,11 @@ namespace StarterAssets
         [Tooltip("Additional degress to override the camera. Useful for fine tuning camera position when locked")]
         public float CameraAngleOverride = 0.0f;
 
+        [Space(10)]
+        [Header("Arena Bounds")]
+        [Tooltip("Half-size of the playable arena on X/Z. The player is kept within [-ArenaHalfSize, ArenaHalfSize]. 0 disables the clamp.")]
+        public float ArenaHalfSize = 25f;
+
         [Tooltip("For locking the camera position on all axis")]
         public bool LockCameraPosition = false;
 
@@ -317,6 +322,18 @@ namespace StarterAssets
             // move the player
             _controller.Move(targetDirection.normalized * (_speed * Time.deltaTime) +
                              new Vector3(0.0f, _verticalVelocity, 0.0f) * Time.deltaTime);
+
+            // keep the player inside the arena so they can't walk off the map
+            if (ArenaHalfSize > 0f)
+            {
+                Vector3 clamped = transform.position;
+                clamped.x = Mathf.Clamp(clamped.x, -ArenaHalfSize, ArenaHalfSize);
+                clamped.z = Mathf.Clamp(clamped.z, -ArenaHalfSize, ArenaHalfSize);
+                if (clamped != transform.position)
+                {
+                    _controller.Move(clamped - transform.position);
+                }
+            }
 
             // update animator if using character
             if (_hasAnimator)
