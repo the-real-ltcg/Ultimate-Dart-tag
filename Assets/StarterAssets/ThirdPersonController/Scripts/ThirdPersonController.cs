@@ -74,12 +74,27 @@ namespace StarterAssets
         [Tooltip("Additional degress to override the camera. Useful for fine tuning camera position when locked")]
         public float CameraAngleOverride = 0.0f;
 
+        [Space(10)]
+        [Header("Arena Bounds")]
+        [Tooltip("Half-size of the playable arena on X/Z. The player is kept within [-ArenaHalfSize, ArenaHalfSize]. 0 disables the clamp.")]
+        public float ArenaHalfSize = 25f;
+        [Tooltip("Height of the visual arena walls. 0 hides the walls but keeps the clamp.")]
+        public float ArenaWallHeight = 4f;
+        [Tooltip("Thickness of the visual arena walls.")]
+        public float ArenaWallThickness = 0.5f;
+        [Tooltip("Color of the visual arena walls.")]
+        public Color ArenaWallColor = new Color(0.2f, 0.85f, 1.0f, 0.55f);
+
         [Tooltip("For locking the camera position on all axis")]
         public bool LockCameraPosition = false;
 
         // cinemachine
         private float _cinemachineTargetYaw;
         private float _cinemachineTargetPitch;
+
+        // arena walls are static geometry shared by every player on this client,
+        // so only the first controller instance to start needs to spawn them
+        private static bool _arenaWallsSpawned;
 
         // player
         private float _speed;
@@ -155,6 +170,8 @@ namespace StarterAssets
             // reset our timeouts on start
             _jumpTimeoutDelta = JumpTimeout;
             _fallTimeoutDelta = FallTimeout;
+
+            SpawnArenaWalls();
         }
 
         public override void OnNetworkSpawn()
@@ -318,6 +335,18 @@ namespace StarterAssets
             _controller.Move(targetDirection.normalized * (_speed * Time.deltaTime) +
                              new Vector3(0.0f, _verticalVelocity, 0.0f) * Time.deltaTime);
 
+            // keep the player inside the arena so they can't walk off the map
+            if (ArenaHalfSize > 0f)
+            {
+                Vector3 clamped = transform.position;
+                clamped.x = Mathf.Clamp(clamped.x, -ArenaHalfSize, ArenaHalfSize);
+                clamped.z = Mathf.Clamp(clamped.z, -ArenaHalfSize, ArenaHalfSize);
+                if (clamped != transform.position)
+                {
+                    _controller.Move(clamped - transform.position);
+                }
+            }
+
             // update animator if using character
             if (_hasAnimator)
             {
@@ -400,6 +429,56 @@ namespace StarterAssets
             if (lfAngle < -360f) lfAngle += 360f;
             if (lfAngle > 360f) lfAngle -= 360f;
             return Mathf.Clamp(lfAngle, lfMin, lfMax);
+        }
+
+        private void SpawnArenaWalls()
+        {
+            // walls are shared static geometry; only the first controller on this
+            // client needs to build them so we don't end up with overlapping copies
+            if (_arenaWallsSpawned || ArenaHalfSize <= 0f || ArenaWallHeight <= 0f)
+                return;
+
+            _arenaWallsSpawned = true;
+
+            float half = ArenaHalfSize;
+            float height = ArenaWallHeight;
+            float thickness = ArenaWallThickness;
+            float length = half * 2f + thickness;
+
+            // each wall is a thin, tall cube centred on its edge of the arena
+            Vector3[] positions =
+            {
+                new Vector3(0f, height * 0.5f, half),    // +Z edge
+                new Vector3(0f, height * 0.5f, -half),   // -Z edge
+                new Vector3(half, height * 0.5f, 0f),    // +X edge
+                new Vector3(-half, height * 0.5f, 0f),   // -X edge
+            };
+            Vector3[] scales =
+            {
+                new Vector3(length, height, thickness),
+                new Vector3(length, height, thickness),
+                new Vector3(thickness, height, length),
+                new Vector3(thickness, height, length),
+            };
+
+            for (int i = 0; i < positions.Length; i++)
+            {
+                GameObject wall = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                wall.name = "ArenaWall_" + i;
+                wall.transform.position = positions[i];
+                wall.transform.localScale = scales[i];
+
+                Renderer renderer = wall.GetComponent<Renderer>();
+                if (renderer != null)
+                {
+                    // URP Lit uses _BaseColor; fall back to _Color for the built-in pipeline
+                    Material material = renderer.material;
+                    if (material.HasProperty("_BaseColor"))
+                        material.SetColor("_BaseColor", ArenaWallColor);
+                    else
+                        material.color = ArenaWallColor;
+                }
+            }
         }
 
         private void OnDrawGizmosSelected()
